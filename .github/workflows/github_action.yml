@@ -26,9 +26,10 @@ jobs:
       - name: Download and filter hosts
         run: |
           mkdir -p /tmp/filtered
-          curl -s "${{ vars.REDIRECT }}" \
-            | grep -v -i -E '\sinstagram\.com' \
-            > /tmp/filtered/hosts
+          IFS=',' read -ra URLS <<< "${{ vars.REDIRECT }}"
+          for url in "${URLS[@]}"; do
+            curl -s "$url"
+          done | grep -v -i -E '\sinstagram\.com' > /tmp/filtered/hosts
       - name: Start local file server
         run: |
           cd /tmp/filtered
