@@ -27,10 +27,15 @@ jobs:
         env:
           REDIRECT_URLS: ${{ vars.REDIRECT }}
         run: |
+          set -x
           mkdir -p /tmp/filtered
-          echo "$REDIRECT_URLS" | tr ',' '\n' | while read -r url; do
-            curl -s "$url"
-          done | grep -v -i -E '\sinstagram\.com' > /tmp/filtered/hosts
+          touch /tmp/raw_hosts.txt
+          echo "$REDIRECT_URLS" | tr ',' '\n' > /tmp/urls.txt
+          while IFS= read -r url; do
+            [ -z "$url" ] && continue
+            curl -sfL "$url" >> /tmp/raw_hosts.txt || true
+          done < /tmp/urls.txt
+          grep -v -i -E '\sinstagram\.com' /tmp/raw_hosts.txt > /tmp/filtered/hosts || true
       - name: Start local file server
         run: |
           cd /tmp/filtered
