@@ -24,10 +24,11 @@ jobs:
           java-version: '25'
           cache: maven
       - name: Download and filter hosts
+        env:
+          REDIRECT_URLS: ${{ vars.REDIRECT }}
         run: |
           mkdir -p /tmp/filtered
-          IFS=',' read -ra URLS <<< "${{ vars.REDIRECT }}"
-          for url in "${URLS[@]}"; do
+          echo "$REDIRECT_URLS" | tr ',' '\n' | while read -r url; do
             curl -s "$url"
           done | grep -v -i -E '\sinstagram\.com' > /tmp/filtered/hosts
       - name: Start local file server
